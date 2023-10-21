@@ -13,8 +13,10 @@ namespace excel.Model
         public string? Name { get; set; }
         public string? WorkDate {get;set;}
         public DateTime? WorkDay { get; set; }
+        public string? DateFormat { get; set; }
         public string? TimeIn { get; set; }
         public string? TimeOut { get; set; }
         public int? OT { get; set; }
+        public int? NumberDayOfMonth { get; set; }
     }
 }
