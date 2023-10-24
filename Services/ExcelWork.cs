@@ -21,7 +21,7 @@ namespace excel.Services
                 {
                     DateTime dayOfMonth = new DateTime(listEmpDateTime[i].WorkDay.Value.Year, listEmpDateTime[i].WorkDay.Value.Month, day);
                     var workingDayemp = lEmpInMonth.Where(x => x.DateFormat == dayOfMonth.ToString("MM/dd/yyyy").Replace("/", ""));
-                    var EachEmpWt = CalculateWokingTime(workingDayemp.ToList(), dayOfMonth);
+                    var EachEmpWt = CalculateWokingTime(workingDayemp.ToList(), dayOfMonth,listEmpDateTime[i].Name);
 
                 }
             }
@@ -30,17 +30,17 @@ namespace excel.Services
 
         }
 
-        private EmpWorkingTime CalculateWokingTime(List<EmployeeModel> workingDayemp, DateTime dayOfMonth)
+        private EmpWorkingTime CalculateWokingTime(List<EmployeeModel> workingDayemp, DateTime dayOfMonth,string EmpNm)
         {
-            var startTime1 = new System.TimeSpan(7, 40, 0);
-            var startTime2 = new System.TimeSpan(8, 15, 0);
-            var endTime1 = new System.TimeSpan(16, 55, 0);
-            var endTime2 = new System.TimeSpan(17, 15, 0);
+            var startTime1 = new System.TimeSpan(7, 00, 0);
+            var startTime2 = new System.TimeSpan(8, 00, 0);
+            var endTime1 = new System.TimeSpan(16, 00, 0);
+            var endTime2 = new System.TimeSpan(17, 00, 0);
             var EachEmpWt = new EmpWorkingTime();
-            if (workingDayemp == null)
+            if (workingDayemp.Count() == 0)
             {
                 EachEmpWt.WorkingDay = dayOfMonth.ToString("dd/MM/yyyy");
-                EachEmpWt.EmpNm = workingDayemp.FirstOrDefault().Name;
+                EachEmpWt.EmpNm = EmpNm;
                 EachEmpWt.TimeIn = "";
                 EachEmpWt.TimeOut = "";
                 EachEmpWt.OffOrWork = false;
@@ -58,7 +58,17 @@ namespace excel.Services
                 EachEmpWt.WorkingDay =dayOfMonth.ToString("dd/MM/yyyy");
                 return EachEmpWt;
             }else{
-                // EachEmpWt.TimeIn =workingDayemp.Where(workingDayemp.Max(x=>x.WorkDay.Value.Hour) )
+                var listTime = new List<TimeSpan>();
+                // EachEmpWt.TimeIn =workingDayemp.Where(x=>x.WorkDay =workingDayemp.Max(x=>x.WorkDay.Value.Hour) );
+                //  for(var i = 1;i<= workingDayemp.Count();i++){
+                //     listTime.Add(workingDayemp[i].WorkDay.Value.TimeOfDay);
+                //  }
+                 var max = workingDayemp.Where(x=>x.WorkDay.Value.Ticks == workingDayemp.Min(x=>x.WorkDay.Value.Ticks)).FirstOrDefault();
+                 var maxT = max.WorkDay.Value.TimeOfDay.ToString(@"hh\:mm");
+                 
+                 EachEmpWt.TimeIn = workingDayemp.Where(x=>x.WorkDay.Value.Ticks == workingDayemp.Min(x=>x.WorkDay.Value.Ticks)).FirstOrDefault().WorkDay.Value.TimeOfDay.ToString(@"hh\:mm");
+                 EachEmpWt.TimeOut = workingDayemp.Where(x=>x.WorkDay.Value.Ticks == workingDayemp.Max(x=>x.WorkDay.Value.Ticks)).FirstOrDefault().WorkDay.Value.TimeOfDay.ToString(@"hh\:mm");
+                 
 
             return EachEmpWt;
             }
