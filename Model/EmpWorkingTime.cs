@@ -11,7 +11,8 @@ namespace excel.Model
         public string? WorkingDay { get; set; }
         public string? TimeIn { get; set; }
         public string? TimeOut { get; set; }
-        public int? OverTime { get; set; }
+        public double? OverTime150 { get; set; }
+        public double? OverTime185 { get; set; }
         public int? Late { get; set; }
         public int? Early { get; set; }
         public bool OffOrWork { get; set; } = false;
