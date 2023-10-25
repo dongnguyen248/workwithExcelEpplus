@@ -15,27 +15,28 @@ namespace excel.Services
             var listEmp = ReadExcelFile();
             var listEmpDateTime = ConvertToDateTime(listEmp);
             var listEachEmpWt = new List<EmpWorkingTime>();
-            var listGroupBy =listEmpDateTime.GroupBy(x => x.Name).Select(x=>new EmployeeModel{
-                Name =x.Key,
+            var listGroupBy = listEmpDateTime.GroupBy(x => x.Name).Select(x => new EmployeeModel
+            {
+                Name = x.Key,
             }).ToList();
             for (var i = 0; i < listGroupBy.Count(); i++)
             {
-                
+
                 var lEmpInMonth = listEmpDateTime.Where(x => x.Name == listGroupBy[i].Name).ToList();
                 for (var day = 1; day <= listEmpDateTime[i].NumberDayOfMonth; day++)
                 {
                     DateTime dayOfMonth = new DateTime(listEmpDateTime[i].WorkDay.Value.Year, listEmpDateTime[i].WorkDay.Value.Month, day);
-                    
+
                     var workingDayemp = lEmpInMonth.Where(x => x.DateFormat == dayOfMonth.ToString("MM/dd/yyyy").Replace("/", ""));
-                    
-                   var  EachEmpWt = CalculateWokingTime(workingDayemp.ToList(), dayOfMonth, listGroupBy[i].Name);
-                   
+
+                    var EachEmpWt = CalculateWokingTime(workingDayemp.ToList(), dayOfMonth, listGroupBy[i].Name);
+
                     listEachEmpWt.Add(EachEmpWt);
                 }
                 Console.WriteLine("Tinh cong xong cho  nhan vien: " + listGroupBy[i].Name);
             }
-              WriteExcelFile(listEachEmpWt);
-        
+            WriteExcelFile(listEachEmpWt);
+
 
         }
         private void WriteExcelFile(List<EmpWorkingTime> listEmp)
@@ -62,9 +63,12 @@ namespace excel.Services
             workSheet.Cells[1, 3].Value = "Ngày";
             workSheet.Cells[1, 4].Value = "Giờ Vào";
             workSheet.Cells[1, 5].Value = "Giờ Ra";
-            workSheet.Cells[1,6].Value = "Tăng ca 150%";
-            workSheet.Cells[1,7].Value = "Tăng ca 185%";
+            workSheet.Cells[1, 6].Value = "Tăng ca 150%";
+            workSheet.Cells[1, 7].Value = "Tăng ca 185%";
             workSheet.Cells[1, 8].Value = "Nghỉ hay làm";
+            workSheet.Cells[1, 9].Value = "Đi Trễ";
+            workSheet.Cells[1, 10].Value = "Về Sớm";
+            workSheet.Cells[1, 11].Value = "Số giờ làm việc";
 
 
 
@@ -82,8 +86,12 @@ namespace excel.Services
                 workSheet.Cells[recordIndex, 4].Value = emp.TimeIn;
                 workSheet.Cells[recordIndex, 5].Value = emp.TimeOut;
                 workSheet.Cells[recordIndex, 6].Value = emp.OverTime150;
-                workSheet.Cells[recordIndex,7].Value = emp.OverTime185;
-                workSheet.Cells[recordIndex, 8].Value = emp.OffOrWork?"Làm":"Nghỉ";
+                workSheet.Cells[recordIndex, 7].Value = emp.OverTime185;
+                workSheet.Cells[recordIndex, 8].Value = emp.OffOrWork ? "Làm" : "Nghỉ";
+                workSheet.Cells[recordIndex, 9].Value = emp.Late;
+                workSheet.Cells[recordIndex, 10].Value = emp.Early;
+                var wtHour = emp.OffOrWork ? emp.Late > 0 ? 8 - emp.Late : emp.Early > 0 ? 8 - emp.Early : 8 : 0;
+                workSheet.Cells[recordIndex, 11].Value = wtHour > 0 ? wtHour : 0;
 
                 recordIndex++;
             }
@@ -116,9 +124,9 @@ namespace excel.Services
         {
             var startTime1 = new System.TimeSpan(7, 30, 0);
             var endTime1 = new System.TimeSpan(16, 30, 0);
-            var overTime1 = new System.TimeSpan(16,30,00);
-            var overTime2 = new System.TimeSpan(22,00,00);
-            
+            var overTime1 = new System.TimeSpan(16, 30, 00);
+            var overTime2 = new System.TimeSpan(22, 00, 00);
+
             var EachEmpWt = new EmpWorkingTime();
             if (workingDayemp.Count() == 0)
             {
@@ -129,33 +137,35 @@ namespace excel.Services
                 EachEmpWt.OffOrWork = false;
                 EachEmpWt.Early = 0;
                 EachEmpWt.Late = 0;
-               EachEmpWt.OverTime150 =0;
-               EachEmpWt.OverTime185 =0;
+                EachEmpWt.OverTime150 = 0;
+                EachEmpWt.OverTime185 = 0;
                 return EachEmpWt;
             }
             else if (workingDayemp.Count() == 1)
             {
                 var TimeInDay = workingDayemp.FirstOrDefault()?.WorkDay?.TimeOfDay;
                 EachEmpWt.EmpNm = EmpNm;
-                EachEmpWt.TimeIn = TimeInDay  <= startTime1 ? TimeInDay?.ToString(@"hh\:mm") : "Quen bam vao";
-                EachEmpWt.TimeOut = TimeInDay >= endTime1  ? TimeInDay?.ToString(@"hh\:mm") : "Quen Bam Ra";
+                EachEmpWt.TimeIn = TimeInDay <= startTime1 ? TimeInDay?.ToString(@"hh\:mm") : "Quen bam vao";
+                EachEmpWt.TimeOut = TimeInDay >= endTime1 ? TimeInDay?.ToString(@"hh\:mm") : "Quen Bam Ra";
                 EachEmpWt.OffOrWork = true;
                 EachEmpWt.WorkingDay = dayOfMonth.ToString("dd/MM/yyyy");
-                EachEmpWt.OverTime150 =0;
-                EachEmpWt.OverTime185 =0;
+                EachEmpWt.OverTime150 = 0;
+                EachEmpWt.OverTime185 = 0;
                 return EachEmpWt;
             }
             else
             {
-                var timeIn =workingDayemp.Where(x => x.WorkDay.Value.Ticks == workingDayemp.Min(x => x.WorkDay.Value.Ticks)).FirstOrDefault().WorkDay.Value.TimeOfDay;
-                var timeOut =workingDayemp.Where(x => x.WorkDay.Value.Ticks == workingDayemp.Max(x => x.WorkDay.Value.Ticks)).FirstOrDefault().WorkDay.Value.TimeOfDay;
+                var timeIn = workingDayemp.Where(x => x.WorkDay.Value.Ticks == workingDayemp.Min(x => x.WorkDay.Value.Ticks)).FirstOrDefault().WorkDay.Value.TimeOfDay;
+                var timeOut = workingDayemp.Where(x => x.WorkDay.Value.Ticks == workingDayemp.Max(x => x.WorkDay.Value.Ticks)).FirstOrDefault().WorkDay.Value.TimeOfDay;
                 EachEmpWt.EmpNm = EmpNm;
                 EachEmpWt.OffOrWork = true;
                 EachEmpWt.TimeIn = timeIn.ToString(@"hh\:mm");
                 EachEmpWt.TimeOut = timeOut.ToString(@"hh\:mm");
                 EachEmpWt.WorkingDay = dayOfMonth.ToString("dd/MM/yyyy");
-                EachEmpWt.OverTime185 = timeOut >overTime2 ? Math.Round(timeOut.Subtract(overTime2).TotalHours*2 ,MidpointRounding.AwayFromZero)/2 :0;
-                EachEmpWt.OverTime150 = timeOut > overTime1 ? Math.Round(timeOut.Subtract(overTime1).TotalHours*2 ,MidpointRounding.AwayFromZero)/2 - EachEmpWt.OverTime185: 0;
+                EachEmpWt.OverTime185 = timeOut > overTime2 ? Math.Round(timeOut.Subtract(overTime2).TotalHours * 2, MidpointRounding.AwayFromZero) / 2 : 0;
+                EachEmpWt.OverTime150 = timeOut > overTime1 ? Math.Round(timeOut.Subtract(timeIn > endTime1 ? timeIn : overTime1).TotalHours * 2, MidpointRounding.AwayFromZero) / 2 - EachEmpWt.OverTime185 : 0;
+                EachEmpWt.Early = timeOut < endTime1 ? Math.Round(endTime1.Subtract(timeOut).TotalHours * 2, MidpointRounding.AwayFromZero) / 2 : 0;
+                EachEmpWt.Late = timeIn > startTime1 ? Math.Round(timeIn.Subtract(startTime1).TotalHours * 2, MidpointRounding.AwayFromZero) / 2 : 0;
                 return EachEmpWt;
             }
 

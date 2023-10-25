@@ -13,8 +13,8 @@ namespace excel.Model
         public string? TimeOut { get; set; }
         public double? OverTime150 { get; set; }
         public double? OverTime185 { get; set; }
-        public int? Late { get; set; }
-        public int? Early { get; set; }
+        public double? Late { get; set; }
+        public double? Early { get; set; }
         public bool OffOrWork { get; set; } = false;
     }
 }
