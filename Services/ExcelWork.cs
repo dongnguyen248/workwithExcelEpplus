@@ -90,7 +90,7 @@ namespace excel.Services
                 workSheet.Cells[recordIndex, 8].Value = emp.OffOrWork ? "Làm" : "Nghỉ";
                 workSheet.Cells[recordIndex, 9].Value = emp.Late;
                 workSheet.Cells[recordIndex, 10].Value = emp.Early;
-                var wtHour = emp.OffOrWork ? emp.Late > 0 ? 8 - emp.Late : emp.Early > 0 ? 8 - emp.Early : 8 : 0;
+                var wtHour = emp.OffOrWork ?  8 : 0;
                 workSheet.Cells[recordIndex, 11].Value = wtHour > 0 ? wtHour : 0;
 
                 recordIndex++;
@@ -122,8 +122,9 @@ namespace excel.Services
 
         private EmpWorkingTime CalculateWokingTime(List<EmployeeModel> workingDayemp, DateTime dayOfMonth, string EmpNm)
         {
-            var startTime1 = new System.TimeSpan(7, 30, 0);
-            var endTime1 = new System.TimeSpan(16, 30, 0);
+            var shift1In = new System.TimeSpan();
+            var startTime1 = new System.TimeSpan(8, 00, 0);
+            var endTime1 = new System.TimeSpan(16, 00, 0);
             var overTime1 = new System.TimeSpan(16, 30, 00);
             var overTime2 = new System.TimeSpan(22, 00, 00);
 
@@ -187,12 +188,12 @@ namespace excel.Services
             ExcelPackage.LicenseContext = LicenseContext.Commercial;
             var res = new List<EmployeeModel>();
 
-            string FilePath = "C:\\Users\\HP\\Documents\\dongproject\\congt5.xlsx";
+            string FilePath = "C:\\Users\\HP\\Documents\\dongproject\\T8. Cong Ca ngay.xlsx";
             FileInfo existingFile = new FileInfo(FilePath);
             using (ExcelPackage package = new ExcelPackage(existingFile))
             {
                 //get the first worksheet in the workbook
-                ExcelWorksheet ws = package.Workbook.Worksheets[1];
+                ExcelWorksheet ws = package.Workbook.Worksheets["Dien ÐK"];
                 int colCount = ws.Dimension.End.Column;  //get Column Count
                 int rowCount = ws.Dimension.End.Row;
                 //get row count
@@ -201,12 +202,12 @@ namespace excel.Services
                     var emp = new EmployeeModel();
                     for (int col = 1; col <= colCount; col++)
                     {
-                        if (col == 1)
+                        if (col == 3)
                         {
                             emp.Id = row;
                             emp.Name = ws.Cells[row, col].Value.ToString();
                         }
-                        else
+                        else if(col == 4)
                         {
                             emp.WorkDate = ws.Cells[row, col].Value.ToString();
                         }
